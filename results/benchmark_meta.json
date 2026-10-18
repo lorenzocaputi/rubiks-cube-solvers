@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-17",
+  "cpu": "Apple M1",
+  "python": "3.12.12",
+  "numpy": "2.5.4",
+  "numba": "0.68.0",
+  "workers": 3,
+  "quick": false,
+  "solves": 7000,
+  "wall_seconds": 988.5,
+  "load_average_1min_before_and_after": [
+    15.7,
+    9.5
+  ]
+}
