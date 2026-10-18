@@ -1,0 +1,26 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      RUBIKS_CUBE_SOLVERS_CACHE: ${{ github.workspace }}/.table-cache
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Cache lookup tables
+        uses: actions/cache@v4
+        with:
+          path: .table-cache
+          key: tables-${{ hashFiles('src/rubiks_cube_solvers/tables.py') }}
+      - run: pip install -e ".[dev]"
+      - run: make check PYTHON=python
