@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cube Solver Replays</title>
+<meta name="description" content="Replay benchmark solves of five Rubik's cube solvers in 3D.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a player on the left, the solvers for the chosen scramble on the right; one column on phones. */
+:root {
+  --bg: #f7f7f4;
+  --panel: #ffffff;
+  --ink: #141413;
+  --ink-2: #54534e;
+  --muted: #8a887f;
+  --rule: #e2e0d8;
+  --focus: #2a78d6;
+  --s-beginner: #2a78d6;
+  --s-thistlethwaite: #eb6834;
+  --s-kociemba: #1baf7a;
+  --s-korf: #eda100;
+  --s-learned: #e87ba4;
+  --sans: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141413; --panel: #1c1c1b; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #8a887f; --rule: #2e2e2b;
+    --focus: #5598e7; --s-beginner: #3987e5; --s-thistlethwaite: #d95926; --s-kociemba: #199e70;
+    --s-korf: #c98500; --s-learned: #d55181; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141413; --panel: #1c1c1b; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #8a887f; --rule: #2e2e2b;
+  --focus: #5598e7; --s-beginner: #3987e5; --s-thistlethwaite: #d95926; --s-kociemba: #199e70;
+  --s-korf: #c98500; --s-learned: #d55181; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--sans);
+  padding-block: 28px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+main { max-width: 1080px; margin: 0 auto; display: grid; gap: 22px; }
+header { display: grid; gap: 4px; }
+h1 { font-size: 1.6rem; line-height: 1.2; margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+header p { margin: 0; color: var(--ink-2); max-width: 65ch; }
+a { color: var(--focus); }
+.controls { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: end; }
+.field { display: grid; gap: 4px; }
+label, .label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+select, button {
+  font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--rule);
+  border-radius: 6px; padding: 6px 10px;
+}
+button { cursor: pointer; }
+select:focus-visible, button:focus-visible, .solver:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.stepper { display: flex; gap: 6px; align-items: center; }
+.stage { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.player-box { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 8px; min-width: 0; }
+twisty-player { width: 100%; height: 440px; }
+.side { display: grid; gap: 18px; min-width: 0; }
+.solvers { display: grid; border-top: 1px solid var(--rule); }
+.solver {
+  display: grid; grid-template-columns: 12px minmax(0, 1fr) repeat(3, auto); gap: 4px 14px; align-items: baseline;
+  padding: 10px 8px; border: 0; border-bottom: 1px solid var(--rule); border-radius: 0; background: none;
+  text-align: left; width: 100%;
+}
+.solver:hover { background: color-mix(in srgb, var(--panel) 60%, transparent); }
+.solver[aria-pressed="true"] { background: var(--panel); }
+.solver[aria-pressed="true"] .name { font-weight: 700; }
+.swatch { width: 10px; height: 10px; border-radius: 2px; align-self: center; }
+.num { font-variant-numeric: tabular-nums; font-family: var(--mono); font-size: 0.85rem; color: var(--ink-2); text-align: right; }
+.num b { color: var(--ink); font-weight: 500; }
+.head { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; padding: 0 8px 6px; }
+.moves { display: grid; gap: 4px; }
+.moves code {
+  font-family: var(--mono); font-size: 0.85rem; line-height: 1.6; color: var(--ink); background: var(--panel);
+  border: 1px solid var(--rule); border-radius: 6px; padding: 8px 10px; overflow-wrap: anywhere;
+}
+.note { color: var(--muted); font-size: 0.85rem; margin: 0; max-width: 65ch; }
+#status { color: var(--ink-2); }
+@media (max-width: 760px) {
+  .stage { grid-template-columns: minmax(0, 1fr); }
+  twisty-player { height: 340px; }
+  .solver { grid-template-columns: 12px minmax(0, 1fr) auto auto; }
+  .solver .nodes { display: none; }
+}
+</style>
+<script type="importmap">
+{ "imports": { "three/": "https://cdn.jsdelivr.net/npm/three@0.170.0/" } }
+</script>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Cube solver replays</h1>
+    <p>Benchmark solves from <a href="https://github.com/lorenzocaputi/rubiks-cube-solvers">rubiks-cube-solvers</a>, replayed in 3D. Pick a scramble set and a scramble, then a solver.</p>
+  </header>
+
+  <div class="controls">
+    <div class="field">
+      <label for="set">Scramble set</label>
+      <select id="set"></select>
+    </div>
+    <div class="field">
+      <label for="scramble">Scramble</label>
+      <div class="stepper">
+        <button id="prev" type="button" aria-label="Previous scramble">&larr;</button>
+        <select id="scramble"></select>
+        <button id="next" type="button" aria-label="Next scramble">&rarr;</button>
+      </div>
+    </div>
+    <p id="status" class="note" role="status">Loading solves.json&hellip;</p>
+  </div>
+
+  <div class="stage">
+    <div class="player-box">
+      <twisty-player id="player" background="none" control-panel="bottom-row" hint-facelets="none"></twisty-player>
+    </div>
+    <div class="side">
+      <div>
+        <div class="solver head" aria-hidden="true" style="border:0">
+          <span></span><span>Solver</span><span class="num">moves</span><span class="num">time</span><span class="num nodes">nodes</span>
+        </div>
+        <div id="solvers" class="solvers"></div>
+      </div>
+      <div class="moves">
+        <span class="label">Scramble</span>
+        <code id="scramble-text"></code>
+      </div>
+      <div class="moves">
+        <span class="label">Solution</span>
+        <code id="solution-text"></code>
+      </div>
+      <p class="note">Moves are face turns in the half-turn metric. Times are the CPU time of one search on one core of an Apple M1, from the benchmark run.</p>
+    </div>
+  </div>
+</main>
+
+<script type="module">
+import "https://cdn.jsdelivr.net/npm/cubing@0.63.8/dist/lib/cubing/twisty/index.js";
+
+const COLORS = {
+  "beginner": "--s-beginner", "thistlethwaite": "--s-thistlethwaite", "kociemba": "--s-kociemba",
+  "korf": "--s-korf", "korf-2x2": "--s-korf", "learned-2x2": "--s-learned",
+};
+const $ = (id) => document.getElementById(id);
+const player = $("player");
+let data = null;
+let current = { set: 0, scramble: 0, solver: null };
+
+function fmtTime(s) {
+  if (s < 1e-3) return `${(s * 1e6).toFixed(0)} µs`;
+  if (s < 1) return `${(s * 1e3).toFixed(s < 0.01 ? 1 : 0)} ms`;
+  return `${s.toFixed(2)} s`;
+}
+
+function fillScrambles() {
+  const set = data.sets[current.set];
+  $("scramble").replaceChildren(...set.scrambles.map((s, i) => new Option(`#${s.id}`, i)));
+  $("scramble").value = current.scramble;
+}
+
+function render() {
+  const set = data.sets[current.set];
+  const item = set.scrambles[current.scramble];
+  if (!current.solver || !item.solves[current.solver]) current.solver = set.solvers[0].id;
+  const rows = set.solvers.map(({ id, label }) => {
+    const s = item.solves[id];
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "solver";
+    b.setAttribute("aria-pressed", String(id === current.solver));
+    b.innerHTML = `<span class="swatch" style="background:var(${COLORS[id]})"></span>
+      <span class="name"></span>
+      <span class="num"><b>${s.htm}</b></span>
+      <span class="num">${fmtTime(s.seconds)}</span>
+      <span class="num nodes">${s.nodes.toLocaleString("en-US")}</span>`;
+    b.querySelector(".name").textContent = label;
+    b.addEventListener("click", () => { current.solver = id; render(); });
+    return b;
+  });
+  $("solvers").replaceChildren(...rows);
+  const solve = item.solves[current.solver];
+  $("scramble-text").textContent = item.scramble;
+  $("solution-text").textContent = solve.moves || "(already solved)";
+  player.puzzle = set.puzzle;
+  player.experimentalSetupAlg = item.scramble;
+  player.alg = solve.moves;
+  player.timestamp = 0;
+}
+
+function choose(setIndex, scrambleIndex) {
+  current.set = setIndex;
+  const n = data.sets[setIndex].scrambles.length;
+  current.scramble = (scrambleIndex + n) % n;
+  $("set").value = current.set;
+  fillScrambles();
+  render();
+}
+
+async function main() {
+  try {
+    const response = await fetch("solves.json");
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    data = await response.json();
+  } catch (err) {
+    $("status").textContent = `Could not load solves.json (${err.message}). Serve this folder over HTTP, for example with "python -m http.server".`;
+    return;
+  }
+  $("set").replaceChildren(...data.sets.map((s, i) => new Option(s.label, i)));
+  $("set").addEventListener("change", (e) => choose(Number(e.target.value), 0));
+  $("scramble").addEventListener("change", (e) => choose(current.set, Number(e.target.value)));
+  $("prev").addEventListener("click", () => choose(current.set, current.scramble - 1));
+  $("next").addEventListener("click", () => choose(current.set, current.scramble + 1));
+  const total = data.sets.reduce((n, s) => n + s.scrambles.length, 0);
+  $("status").textContent = `${total} scrambles in ${data.sets.length} sets`;
+  choose(0, 0);
+}
+main();
+</script>
+</body>
+</html>
