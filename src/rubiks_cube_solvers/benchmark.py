@@ -86,6 +86,11 @@ def _solver(name: str, config: str):
             _SOLVERS[key] = LearnedSolver(weight=weight, batch=int(batch))
         else:
             raise ValueError(name)
+        # One untimed solve, so lazy tables and compiled code are loaded before timing starts.
+        if name.endswith("2x2"):
+            _SOLVERS[key].solve(cube2.apply_moves(cube2.SOLVED_INDEX, [0, 3, 6]))
+        else:
+            _SOLVERS[key].solve(SOLVED.apply([0, 3, 6]))
     return _SOLVERS[key]
 
 
