@@ -8,3 +8,5 @@ build/
 dist/
 *.tmp
 .DS_Store
+.table-cache/
+results-quick/
