@@ -91,7 +91,7 @@ def _skip(m, last):
 
 @njit(cache=True)
 def _phase2(cp, ud, sp, last, max_depth, moves, cp_move, ud_move, sp_move, prune_cp, prune_ud, out, offset):
-    """IDA* inside G1.  Returns (length or -1, nodes)."""
+    """IDA* inside G1.  Returns (length or -1, nodes expanded)."""
     nodes = 0
     h0 = max(prune_cp[cp * 24 + sp], prune_ud[ud * 24 + sp])
     if h0 > max_depth:
@@ -107,6 +107,7 @@ def _phase2(cp, ud, sp, last, max_depth, moves, cp_move, ud_move, sp_move, prune
         d = 0
         stack_cp[0], stack_ud[0], stack_sp[0] = cp, ud, sp
         choice[0] = -1
+        nodes += 1
         while d >= 0:
             choice[d] += 1
             if choice[d] == n_moves:
@@ -119,7 +120,6 @@ def _phase2(cp, ud, sp, last, max_depth, moves, cp_move, ud_move, sp_move, prune
             ncp = cp_move[stack_cp[d], m]
             nud = ud_move[stack_ud[d], m]
             nsp = sp_move[stack_sp[d], m]
-            nodes += 1
             h = max(prune_cp[ncp * 24 + nsp], prune_ud[nud * 24 + nsp])
             if h > depth - d - 1:
                 continue
@@ -129,6 +129,7 @@ def _phase2(cp, ud, sp, last, max_depth, moves, cp_move, ud_move, sp_move, prune
             d += 1
             stack_cp[d], stack_ud[d], stack_sp[d] = ncp, nud, nsp
             choice[d] = -1
+            nodes += 1
     return -1, nodes
 
 
@@ -154,7 +155,7 @@ def _search(
     max_nodes,
     best_moves,
 ):
-    """Returns (best length or -1, phase-1 length of the best, nodes)."""
+    """Returns (best length or -1, phase-1 length of the best, nodes expanded)."""
     is_phase2 = np.zeros(18, dtype=np.bool_)
     for m in phase2_moves:
         is_phase2[m] = True
@@ -183,6 +184,7 @@ def _search(
         tw[0], fl[0], sl[0] = t0, f0, s0
         choice[0] = -1
         d = 0
+        nodes += 1
         while d >= 0:
             if depth1 == 0:
                 reached = True
@@ -198,7 +200,6 @@ def _search(
                 nt = twist_move[tw[d], m]
                 nf = flip_move[fl[d], m]
                 ns = slice_move[sl[d], m]
-                nodes += 1
                 h = max(prune_twist[nt * 495 + ns], prune_flip[nf * 495 + ns])
                 togo = depth1 - d - 1
                 if h > togo:
@@ -210,6 +211,7 @@ def _search(
                     d += 1
                     tw[d], fl[d], sl[d] = nt, nf, ns
                     choice[d] = -1
+                    nodes += 1
                     continue
                 if is_phase2[m]:
                     continue  # the previous state was already in G1
