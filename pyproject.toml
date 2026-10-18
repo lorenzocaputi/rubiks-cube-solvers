@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rubiks-cube-solvers"
+version = "0.1.0"
+description = "Five Rubik's cube solvers, from the beginner's method to optimal IDA*, on one seeded benchmark."
+readme = "README.md"
+license = "MIT"
+authors = [{ name = "Lorenzo Caputi" }]
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.26", "numba>=0.59"]
+
+[project.optional-dependencies]
+figures = ["matplotlib>=3.8", "pillow>=10.0"]
+train = ["torch>=2.2"]
+dev = ["pytest>=8.0", "ruff>=0.5"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "W"]
+ignore = ["B905"]
