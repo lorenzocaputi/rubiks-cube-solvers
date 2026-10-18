@@ -412,7 +412,7 @@ def learned(rows):
         ax2.text(
             1.0,
             0.97,
-            f"median nodes expanded:\n{learned_nodes:,.0f} (optimal IDA*: {korf_nodes:,.0f})",
+            f"median nodes expanded:\n{int(learned_nodes + 0.5):,} (optimal IDA*: {int(korf_nodes + 0.5):,})",
             transform=ax2.transAxes,
             ha="right",
             va="top",
