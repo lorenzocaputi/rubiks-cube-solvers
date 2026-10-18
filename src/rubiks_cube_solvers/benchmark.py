@@ -122,7 +122,7 @@ def run_task(task: Task) -> dict:
         "htm": htm(solution.moves),
         "qtm": qtm(solution.moves),
         "seconds": round(solution.seconds, 6),  # wall clock
-        "cpu_seconds": round(cpu, 6),  # CPU time of this process, robust to a busy machine
+        "cpu_seconds": round(cpu, 6),  # CPU time of this process; less affected by other jobs
         "nodes": solution.nodes,
         "solved": bool(solved),
         "detail": _detail(solution.info),
