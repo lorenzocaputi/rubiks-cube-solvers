@@ -268,7 +268,7 @@ class KociembaSolver:
     label = "Kociemba two-phase"
     puzzle = "3x3x3"
 
-    def __init__(self, target: int = 20, max_length: int = 30, max_nodes: int = 20_000_000) -> None:
+    def __init__(self, target: int = 20, max_length: int = 30, max_nodes: int = 2_000_000) -> None:
         self.target = target
         self.max_length = max_length
         self.max_nodes = max_nodes
