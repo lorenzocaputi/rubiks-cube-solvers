@@ -1,0 +1,30 @@
+# Shared figure style; colours for light and dark variants are set in scripts/plotting.py.
+figure.figsize: 8, 4.5
+figure.dpi: 100
+savefig.dpi: 200
+figure.constrained_layout.use: True
+font.family: sans-serif
+font.sans-serif: Helvetica Neue, Helvetica, Arial, DejaVu Sans
+font.size: 9.5
+axes.titlesize: 10.5
+axes.titlelocation: left
+axes.titlepad: 8
+axes.labelsize: 9.5
+axes.spines.top: False
+axes.spines.right: False
+axes.spines.left: False
+axes.linewidth: 0.8
+axes.grid: True
+axes.grid.axis: y
+axes.axisbelow: True
+grid.linewidth: 0.6
+grid.linestyle: -
+xtick.major.size: 3
+xtick.major.width: 0.6
+ytick.major.size: 0
+ytick.major.pad: 4
+legend.frameon: False
+legend.fontsize: 9
+lines.linewidth: 2
+lines.solid_capstyle: round
+lines.solid_joinstyle: round
