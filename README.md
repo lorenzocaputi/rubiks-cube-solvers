@@ -79,7 +79,7 @@ pip install -e ".[dev,figures]"
 make benchmark && make figures
 ```
 
-`make benchmark` runs all 7,000 solves in about 17 minutes on a laptop and writes `results/`; the first run also builds about 175 MB of lookup tables in `~/.cache/rubiks-cube-solvers`. `make figures` redraws the figures and the animation, `make check` runs the tests, and `make train` retrains the network (after `pip install -e ".[train]"`). To replay any of the solves in 3D, run `python -m http.server -d docs` and open http://localhost:8000; the viewer uses [cubing.js](https://github.com/cubing/cubing.js).
+`make benchmark` runs all 7,000 solves in about 17 minutes on a laptop and writes `results/`; the first run also builds about 175 MB of lookup tables in `~/.cache/rubiks-cube-solvers`. `make figures` redraws the figures and the animation, `make check` runs the tests, and `make train` retrains the network (after `pip install -e ".[train]"`). Every solve can be replayed in 3D at https://lorenzocaputi.com/rubiks-cube-solvers/, or locally with `python -m http.server -d docs`; the viewer uses [cubing.js](https://github.com/cubing/cubing.js).
 
 ## References
 
